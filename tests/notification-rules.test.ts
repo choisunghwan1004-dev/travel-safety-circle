@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {validateNotificationInput,enabledChannels,eligibleContact} from '../lib/notification-rules.ts';
+assert.deepEqual(enabledChannels({sms:false,email:true}),['email']);
+assert.deepEqual(enabledChannels({sms:true,email:false}),['sms']);
+assert.deepEqual(enabledChannels({sms:false,email:false}),[]);
+assert.deepEqual(enabledChannels({sms:true,email:true}),['sms','email']);
+assert.equal(eligibleContact({relation:'가족',consent:true}),true);
+assert.equal(eligibleContact({relation:'친구',consent:false}),false);
+assert.equal(eligibleContact({relation:'기타',consent:true}),false);
+assert.deepEqual(validateNotificationInput({channel:'email',key:'re_test_1234567890',from:'sender@example.test'}),{resendKey:'re_test_1234567890',emailFrom:'sender@example.test'});
+for(const from of ['bad','x@example.test\r\nBcc:y@example.test'])assert.throws(()=>validateNotificationInput({channel:'email',key:'re_test_1234567890',from}));
+assert.throws(()=>validateNotificationInput({channel:'sms',key:'validtestkey',secret:'validtestsecret',from:'+819012345678'}));
+assert.equal(validateNotificationInput({channel:'sms',key:'validtestkey',secret:'validtestsecret',from:'010-1234-5678'}).smsFrom,'01012345678');
+console.log('PASS independent channels, recipient relation/consent, sender validation, header injection');

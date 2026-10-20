@@ -7,3 +7,6 @@ export const aiUsage=sqliteTable("ai_usage",{owner:text("owner").primaryKey(),da
 export const lookupCache=sqliteTable("lookup_cache",{id:text("id").primaryKey(),data:text("data").notNull(),expiresAt:integer("expires_at").notNull()});
 
 export const userAiKeys=sqliteTable("user_ai_keys",{owner:text("owner").primaryKey(),ciphertext:text("ciphertext").notNull(),iv:text("iv").notNull(),lastFour:text("last_four").notNull(),updatedAt:text("updated_at").notNull()});
+
+export const notificationSettings=sqliteTable('notification_settings',{owner:text('owner').primaryKey(),ciphertext:text('ciphertext').notNull(),iv:text('iv').notNull(),updatedAt:text('updated_at').notNull()});
+export const alertMonitors=sqliteTable('alert_monitors',{owner:text('owner').primaryKey(),lastAt:text('last_at').notNull(),result:text('result').notNull()});

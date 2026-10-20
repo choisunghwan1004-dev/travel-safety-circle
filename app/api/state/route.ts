@@ -50,7 +50,7 @@ export async function POST(req:Request){
  if(b.action!=='clear')s.dataUpdatedAt=now;
  s.events=s.events.slice(0,100);const result=await db.update(journeys).set({data:JSON.stringify(s),revision:row.revision+1}).where(and(eq(journeys.owner,u.userId),eq(journeys.revision,row.revision))).returning();
  if(!result.length)return reply({error:'자료가 변경되었습니다. 새로고침 후 다시 시도하세요.'},409);
- if(b.action==='clear'){await db.delete(deliveries).where(eq(deliveries.owner,u.userId));await env.DB!.prepare('DELETE FROM user_ai_keys WHERE owner=?').bind(u.userId).run();}
+ if(b.action==='clear'){await db.delete(deliveries).where(eq(deliveries.owner,u.userId));await env.DB!.prepare('DELETE FROM user_ai_keys WHERE owner=?').bind(u.userId).run();await env.DB!.prepare('DELETE FROM notification_settings WHERE owner=?').bind(u.userId).run();await env.DB!.prepare('DELETE FROM alert_monitors WHERE owner=?').bind(u.userId).run();}
  if(b.action==='clear'&&env.BUCKET){await env.BUCKET.delete([await photoKey(u.userId,'person'),await photoKey(u.userId,'area')]);}
  return reply({state:s,revision:row.revision+1});
 }

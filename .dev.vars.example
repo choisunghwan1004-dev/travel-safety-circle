@@ -4,8 +4,7 @@ SOLAPI_API_SECRET=
 SOLAPI_FROM=
 RESEND_API_KEY=
 ALERT_EMAIL_FROM=
-# 실제 무인 반복 실행 검증 전에는 false 유지
-ALERT_SCHEDULER_READY=false
+# 정기 점검 상태는 계정별 alert_monitors의 최근 실행 기록을 사용합니다.
 
 # Server only: 64 hex characters, stable per installation. Never commit the value.
 # Each traveler registers their own OpenAI key in the AI settings screen.

@@ -61,3 +61,9 @@ lookup_cache(id TEXT PK, data TEXT NOT NULL, expires_at INTEGER NOT NULL) 추가
 
 ## V1.6 본인 AI 키
 user_ai_keys 테이블 추가: owner TEXT PK, ciphertext TEXT NOT NULL, iv TEXT NOT NULL, last_four TEXT NOT NULL, updated_at TEXT NOT NULL. 물리 FK 없음. 0004_old_queen_noir.sql 적용. API 키 평문은 보관하지 않으며 보안 환경변수의 별도 마스터키로 AES-GCM 암호화한다. 자세한 처리·삭제 범위는 docs/11 참조.
+
+### V1.7 추가 테이블
+
+- notification_settings: owner PK, ciphertext, iv, updated_at. 개인 발송 설정을 암호화 보관합니다.
+- alert_monitors: owner PK, last_at, result. 개인 점검 시각과 처리 상태를 저장합니다.
+- 0005 마이그레이션은 신규 두 테이블만 생성합니다. 기존 마이그레이션은 유지합니다.
