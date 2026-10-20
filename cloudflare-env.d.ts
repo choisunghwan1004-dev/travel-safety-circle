@@ -2,6 +2,8 @@ declare namespace Cloudflare {
   interface Env {
     DB?: D1Database;
     OPENAI_API_KEY?: string;
+    GEOCODER_BASE_URL?: string;
+    OVERPASS_API_URL?: string;
     SOLAPI_API_KEY?: string;
     SOLAPI_API_SECRET?: string;
     SOLAPI_FROM?: string;

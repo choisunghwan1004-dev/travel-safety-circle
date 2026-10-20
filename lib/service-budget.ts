@@ -1,0 +1,2 @@
+import {env} from 'cloudflare:workers';
+export async function claimBudget(owner:string,interval=60000,limit=20){const now=Date.now(),day=new Date(now).toISOString().slice(0,10);return !!await env.DB!.prepare(`INSERT INTO ai_usage(owner,day,count,last_at) VALUES(?,?,1,?) ON CONFLICT(owner) DO UPDATE SET day=excluded.day,count=CASE WHEN ai_usage.day=excluded.day THEN ai_usage.count+1 ELSE 1 END,last_at=excluded.last_at WHERE ai_usage.last_at<=? AND (ai_usage.day<>excluded.day OR ai_usage.count<${limit}) RETURNING owner`).bind(owner,day,now,now-interval).first();}

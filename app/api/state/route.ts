@@ -1,3 +1,5 @@
+import {validDate} from '../../../lib/assist-rules';
+import {sanitizeLocation} from '../../../lib/trip-autofill';
 import {locationSaveDue} from '../../../lib/location-rules';
 import {env} from 'cloudflare:workers';
 import {photoKey} from '../../photo-storage';
@@ -21,8 +23,9 @@ export async function POST(req:Request){
  const s=JSON.parse(row.data);const now=new Date().toISOString();const log=(text:string)=>s.events.unshift({id:crypto.randomUUID(),at:now,text});
  const str=(x:unknown,max=1000)=>typeof x==='string'?x.trim().slice(0,max):'';
  if(b.action==='trip'){
- const t=b.value;if(!t||!str(t.name)||!str(t.destination)||!Number.isFinite(Date.parse(t.start))||!Number.isFinite(Date.parse(t.end))||Date.parse(t.end)<Date.parse(t.start)||!Number.isFinite(Date.parse(t.deadline)))return reply({error:'여행자, 행선지, 여행 날짜, 안전 확인 예정시간을 확인하세요.'},400);
- s.trip=Object.fromEntries(['name','phone','destination','start','end','hotel','transport','route','deadline','police','embassy','homeAddress','homePolice','homePolicePhone','missingArea','appearance','notes'].map(k=>[k,str(t[k],5000)]));if(!s.lastCheck||s.status==='귀가 완료'){s.lastCheck=now;s.lastAutoLocationAt=null;}s.status='여행 중';log('여행 일정 등록·수정');
+ const t=b.value;if(!t||!str(t.name)||!str(t.destination)||!validDate(t.start)||!validDate(t.end)||Date.parse(t.end)<Date.parse(t.start)||!Number.isFinite(Date.parse(t.deadline)))return reply({error:'여행자, 행선지, 여행 날짜, 안전 확인 예정시간을 확인하세요.'},400);
+ const captured=t.locationDraft?sanitizeLocation(t.locationDraft):null;if(t.locationDraft&&!captured)return reply({error:'현재 위치가 올바르지 않거나 하루 이상 지났습니다. 위치를 다시 확인하세요.'},400);
+ s.trip=Object.fromEntries(['name','phone','destination','start','end','hotel','transport','route','deadline','police','embassy','homeAddress','homePolice','homePolicePhone','missingArea','appearance','notes','homeRegion','homePoliceAddress','homePoliceSource','policeName','policeAddress','policeSource','lastArea','ticketName','airline','flightNumber','departureAirport','arrivalAirport','flightDate','departureTime','arrivalDate','arrivalTime','seat','gate','country','transportType','lastAreaLocationAt'].map(k=>[k,str(t[k],5000)]));if(!s.lastCheck||s.status==='귀가 완료'){s.lastCheck=now;s.lastAutoLocationAt=null;}if(captured&&(!s.location||Date.parse(captured.acquiredAt)>=Date.parse(s.location.acquiredAt||s.location.at)))s.location=captured;s.status='여행 중';log('여행 일정 등록·수정');
  }else if(b.action==='contact'){
  const c=b.value;const v={id:c?.id||crypto.randomUUID(),name:str(c?.name,80),phone:str(c?.phone,30),relation:str(c?.relation,30),email:str(c?.email,200).toLowerCase(),consent:c?.consent===true};
  if(!contactValid(v))return reply({error:'이름·전화번호·이메일은 모두 필수이며, 등록·자동 알림 수신 동의가 필요합니다.'},400);

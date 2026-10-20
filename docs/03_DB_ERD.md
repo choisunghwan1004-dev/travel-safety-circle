@@ -55,3 +55,6 @@ erDiagram
 | last_at | INTEGER | NOT NULL | 마지막 요청 시각(ms) |
 
 `journeys.owner`와 논리적으로 연결되며 물리 FK는 없습니다. 원문·생성 결과·API 키는 저장하지 않습니다. 사용자 자료 전체 삭제와 별개로 요청 제한 기록은 유지됩니다. 1분 1회·하루 20회 제한은 원자적 SQL에서 적용합니다.
+
+## V1.5 보완 — 2026-10-21
+lookup_cache(id TEXT PK, data TEXT NOT NULL, expires_at INTEGER NOT NULL) 추가. 검색어는 해시로 식별하고 공개 지역·경찰시설 결과를 24시간 사용합니다. 물리 FK는 없습니다. 마이그레이션 0003_late_lockheed.sql과 0003_snapshot.json 참조. 자세한 전체 흐름은 `10_간편자동입력_검수.md`에 기록했습니다.

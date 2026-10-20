@@ -1,0 +1,4 @@
+import {validDate} from './assist-rules.ts';
+export function fillEmpty(current:Record<string,any>,values:Record<string,any>){const result={...current};for(const [k,v] of Object.entries(values))if(!result[k]&&typeof v==='string'&&v.trim())result[k]=v;return result;}
+export function returnDate(start:string,nights:number){if(!validDate(start)||![0,1,2,3,4,6,13].includes(nights))return '';return new Date(Date.parse(start+'T12:00:00Z')+nights*86400000).toISOString().slice(0,10);}
+export function sanitizeLocation(p:any,now=Date.now()){if(!Number.isFinite(p?.lat)||!Number.isFinite(p?.lng)||Math.abs(p.lat)>90||Math.abs(p.lng)>180)return null;const at=Date.parse(p.acquiredAt);if(!Number.isFinite(at)||at>now+300000||at<now-24*3600000)return null;return {lat:p.lat,lng:p.lng,accuracy:Number.isFinite(p.accuracy)?Math.max(0,p.accuracy):null,acquiredAt:new Date(at).toISOString(),at:new Date(now).toISOString(),mode:'manual'};}

@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {fillEmpty,returnDate,sanitizeLocation} from '../lib/trip-autofill.ts';
+assert.deepEqual(fillEmpty({name:'기존',seat:''},{name:'사진',seat:'12A',unknown:null}),{name:'기존',seat:'12A'});
+assert.equal(returnDate('2026-12-31',2),'2027-01-02');assert.equal(returnDate('2026-02-30',2),'');
+const now=Date.parse('2026-10-21T00:00:00Z');
+assert.equal(sanitizeLocation({lat:91,lng:127,acquiredAt:new Date(now).toISOString()},now),null);
+assert.equal(sanitizeLocation({lat:37,lng:127,acquiredAt:new Date(now+3600000).toISOString()},now),null);
+assert.equal(sanitizeLocation({lat:37,lng:127,acquiredAt:new Date(now-48*3600000).toISOString()},now),null);
+assert.equal(sanitizeLocation({lat:37,lng:127,acquiredAt:new Date(now).toISOString()},now)?.mode,'manual');
+console.log('PASS preserve user values, cross-year date choice, invalid/stale GPS rejection');

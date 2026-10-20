@@ -9,3 +9,7 @@ ALERT_SCHEDULER_READY=false
 
 # Server only; never commit actual keys
 OPENAI_API_KEY=
+
+# Optional public map provider switch; defaults work without API keys
+# GEOCODER_BASE_URL=https://nominatim.openstreetmap.org
+# OVERPASS_API_URL=https://overpass-api.de/api/interpreter

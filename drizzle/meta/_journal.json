@@ -22,6 +22,13 @@
       "when": 1792483981027,
       "tag": "0002_ai_usage",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1792538222815,
+      "tag": "0003_late_lockheed",
+      "breakpoints": true
     }
   ]
 }
