@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1792471023484,
+      "tag": "0000_thick_young_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1792472220635,
+      "tag": "0001_wakeful_black_cat",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792483981027,
+      "tag": "0002_ai_usage",
+      "breakpoints": true
+    }
+  ]
+}

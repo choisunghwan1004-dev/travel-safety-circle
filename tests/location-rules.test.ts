@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {isTravelActive,locationSaveDue,LOCATION_INTERVAL_MS} from '../lib/location-rules.ts';
+const at=Date.parse('2026-10-20T03:00:00Z');
+const trip={trip:{start:'2026-10-20',end:'2026-10-22'},status:'여행 중',lastAutoLocationAt:null};
+assert.equal(locationSaveDue(trip,at),true);
+const saved={...trip,lastAutoLocationAt:new Date(at).toISOString()};
+assert.equal(locationSaveDue(saved,at+LOCATION_INTERVAL_MS-1),false);
+assert.equal(locationSaveDue(saved,at+LOCATION_INTERVAL_MS),true);
+assert.equal(locationSaveDue(JSON.parse(JSON.stringify(saved)),at+60000),false);
+assert.equal(locationSaveDue({...saved,status:'귀가 완료'},at+LOCATION_INTERVAL_MS),false);
+assert.equal(isTravelActive(trip,Date.parse('2026-10-19T14:59:59Z')),false);
+assert.equal(isTravelActive(trip,Date.parse('2026-10-22T15:00:00Z')),false);
+assert.equal(locationSaveDue({...saved,location:{at:new Date(at+60000).toISOString()}},at+LOCATION_INTERVAL_MS),true);
+console.log('PASS: 여행 중 첫 저장, 2시간 경계, 새로고침 간격 유지, 귀가/기간 외 중지, 수동 저장과 간격 분리');

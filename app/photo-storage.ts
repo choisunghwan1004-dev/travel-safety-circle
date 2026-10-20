@@ -1,0 +1,1 @@
+export async function photoKey(user:string,kind:string){const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(user));return 'photos/'+Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('')+'/'+kind;}

@@ -1,0 +1,9 @@
+export const WAIT_MS=24*60*60*1000;
+export function contactValid(c:any){return !!c&&typeof c.name==='string'&&!!c.name.trim()&&/^\+?[0-9 ()-]{6,25}$/.test(c.phone||'')&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email||'')&&c.consent===true;}
+export function due(s:any,now=Date.now()){const start=Date.parse((s?.trip?.start||'')+'T00:00:00+09:00');const last=Date.parse(s?.lastCheck);const anchor=Math.max(start,last);return !!s?.alertsEnabled&&!!s.trip&&s.status!=='귀가 완료'&&Number.isFinite(anchor)&&now-anchor>=WAIT_MS;}
+export function normalizePhone(p:string){const digits=p.replace(/\D/g,'');if(p.startsWith('+82'))return '0'+digits.slice(2);if(/^01[016789]\d{7,8}$/.test(digits))return digits;throw Error('현재 자동 문자는 한국 휴대전화 번호만 지원합니다.');}
+export function alertText(s:any){const t=s.trip,p=s.location;return ['[여행안심 · 안전 확인 필요]','마지막 안전 확인 후 24시간 응답이 없습니다. 실종 확정이나 경찰 신고 접수가 아닙니다.',`여행자: ${t.name} / ${t.phone||'연락처 미등록'}`,`행선지: ${t.destination}`,`마지막 안전 확인: ${s.lastCheck}`,`여행 기간: ${t.start} ~ ${t.end}`,`예정 경로: ${t.route||'미등록'}`,`숙소: ${t.hotel||'미등록'}`,`마지막 저장 위치: ${p?`${p.lat}, ${p.lng} (${p.at}, 오차 약 ${Math.round(p.accuracy||0)}m)`:'미등록'}`,p?`지도: https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`:'',`실종 추정 지역(등록 정보): ${t.missingArea||'미등록'}`,`인상착의: ${t.appearance||'미등록'}`,'먼저 본인에게 연락해 안전을 확인해 주세요. 위험이 의심되면 직접 현지 기관에 연락하세요.'].filter(Boolean).join('\n');}
+export function reportSnapshot(s:any,photos:any={},createdAt=new Date().toISOString()){
+ const p=s.location;const acquired=p?.acquiredAt||p?.at;const age=acquired?Math.max(0,Date.parse(createdAt)-Date.parse(acquired)):null;
+ return {createdAt,source:'서버에 마지막으로 업로드된 자료. 휴대전화 실시간 조회가 아닙니다.',dataUpdatedAt:s.dataUpdatedAt||null,traveler:s.trip?.name||null,phone:s.trip?.phone||null,trip:s.trip,lastSafetyCheck:s.lastCheck,location:p?{...p,ageMinutes:age===null?null:Math.floor(age/60000),freshness:age===null?'확인 불가':age>2*60*60000?'2시간 이상 지난 위치':'최근 2시간 내 확인 위치'}:null,photos};
+}

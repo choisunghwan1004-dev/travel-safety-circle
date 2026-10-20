@@ -1,0 +1,11 @@
+# 로컬 개발 전용. 값이 들어간 .dev.vars는 커밋하지 않습니다.
+SOLAPI_API_KEY=
+SOLAPI_API_SECRET=
+SOLAPI_FROM=
+RESEND_API_KEY=
+ALERT_EMAIL_FROM=
+# 실제 무인 반복 실행 검증 전에는 false 유지
+ALERT_SCHEDULER_READY=false
+
+# Server only; never commit actual keys
+OPENAI_API_KEY=

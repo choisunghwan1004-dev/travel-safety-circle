@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {aiSource,responseRequest,parseResponse} from '../lib/openai-report.ts';
+const source=aiSource({trip:{name:'테스트',phone:'SECRET_PHONE',homeAddress:'SECRET_HOME',notes:'SECRET_NOTES',route:'test'},contacts:[{email:'SECRET_EMAIL'}],location:{lat:37,lng:127,at:'2026-10-20T00:00:00Z'},owner:'SECRET_OWNER'});
+assert(!JSON.stringify(source).includes('SECRET'));
+assert.equal(source.location?.acquiredAt,'2026-10-20T00:00:00Z');
+const req=responseRequest(source,'ja');assert.equal(req.store,false);assert.equal(req.model,'gpt-6-luna');assert.equal(req.text.format.strict,true);assert(req.instructions.includes('日本語'));
+const output={status:'completed',output:[{type:'reasoning'},{type:'message',content:[{type:'output_text',text:JSON.stringify({draft:'초안',missing:['위치 시각']})}]}]};
+assert.deepEqual(parseResponse(output),{draft:'초안',missing:['위치 시각']});
+assert.throws(()=>parseResponse({...output,status:'incomplete'}));
+assert.throws(()=>parseResponse({status:'completed',output:[{type:'message',content:[{type:'refusal'}]}]}));
+assert.throws(()=>parseResponse({status:'completed',output:[{type:'message',content:[{type:'output_text',text:'{"draft":123,"missing":[]}'}]}]}));
+console.log('OpenAI source minimization / response handling passed');

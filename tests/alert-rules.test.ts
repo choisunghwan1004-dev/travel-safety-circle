@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import {contactValid,due,normalizePhone,WAIT_MS,reportSnapshot} from '../lib/alert-rules.ts';
+const contact={name:'테스트 가족',phone:'01012345678',email:'family@example.test',consent:true};
+assert.equal(contactValid(contact),true);
+for(const field of ['name','phone','email'])assert.equal(contactValid({...contact,[field]:''}),false);
+assert.equal(contactValid({...contact,email:'wrong'}),false);
+assert.equal(contactValid({...contact,consent:false}),false);
+const start=Date.parse('2026-10-20T00:00:00Z');
+const trip={alertsEnabled:true,trip:{start:'2026-10-19'},status:'여행 중',lastCheck:new Date(start).toISOString()};
+assert.equal(due(trip,start+WAIT_MS-1),false);
+assert.equal(due(trip,start+WAIT_MS),true);
+assert.equal(due({...trip,alertsEnabled:false},start+WAIT_MS),false);
+assert.equal(due({...trip,status:'귀가 완료'},start+WAIT_MS),false);
+assert.equal(due({...trip,lastCheck:new Date(start+WAIT_MS).toISOString()},start+WAIT_MS+1),false);
+assert.equal(due({...trip,trip:{start:'2026-11-01'}},start+WAIT_MS),false);
+assert.equal(normalizePhone('+82 10-1234-5678'),'01012345678');
+assert.throws(()=>normalizePhone('+81 90 1234 5678'));
+console.log('PASS: 이름·전화번호·이메일·동의 필수, 24시간 경계, 중지·귀가·안전확인 초기화, 국내 전화번호 정규화');
+
+const snapshot=reportSnapshot({trip:{name:'여행자'},location:{lat:35,lng:139,at:'2026-10-20T00:00:00Z',acquiredAt:'2026-10-19T23:59:00Z'},dataUpdatedAt:'2026-10-20T00:00:00Z'},{person:{uploadedAt:'2026-10-20T00:01:00Z'}},'2026-10-20T02:00:00Z');
+assert.equal(snapshot.location?.lat,35);
+assert.equal(snapshot.location?.ageMinutes,121);
+assert.equal(snapshot.location?.freshness,'2시간 이상 지난 위치');
+assert.equal(snapshot.photos.person.uploadedAt,'2026-10-20T00:01:00Z');
+assert.equal(reportSnapshot({trip:{}},{}).location,null);
+console.log('PASS: 자동 자료 최신 위치/업로드 시각/오래된 위치 구분/사진 메타데이터/위치 미등록');
