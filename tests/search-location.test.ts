@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {resolveSearchPoint} from '../lib/search-location.ts';
+let calls=0;const current={lat:0,lng:0,acquiredAt:'2026-10-21T01:00:00Z'};
+const capture=async()=>{calls++;return current};
+assert.deepEqual(await resolveSearchPoint('last',null,null,capture),{point:current,captured:true});
+assert.equal((await resolveSearchPoint('last',current,{lat:91,lng:2},capture)).point,current);
+assert.equal(calls,1);
+const newer={...current,acquiredAt:'2026-10-21T02:00:00Z'};
+assert.equal((await resolveSearchPoint('last',current,newer,capture)).point,newer);
+await resolveSearchPoint('current',current,newer,capture);
+await resolveSearchPoint('homeCurrent',null,null,capture);
+assert.equal(calls,3);
+for(const region of ['home','destination'])assert.equal((await resolveSearchPoint(region,null,null,capture)).point,undefined);
+assert.equal(calls,3);
+await assert.rejects(()=>resolveSearchPoint('last',null,null,async()=>{throw Error('denied')}),/denied/);
+await assert.rejects(()=>resolveSearchPoint('current',null,null,async()=>({lat:NaN,lng:0})),/GPS/);
+console.log('PASS missing GPS fallback, valid zero, newest saved/draft, fresh capture, region isolation, failures');
