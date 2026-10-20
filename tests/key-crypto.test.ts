@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {sealKey,openKey,validApiKey} from '../lib/key-crypto.ts';
+const secret='ab'.repeat(32),value='synthetic-test-value-not-a-real-key';
+const a=await sealKey(value,'owner-a',secret),b=await sealKey(value,'owner-a',secret);
+assert.notEqual(a.ciphertext,b.ciphertext);assert(!a.ciphertext.includes(value));assert.equal(await openKey(a,'owner-a',secret),value);
+await assert.rejects(()=>openKey(a,'owner-b',secret));await assert.rejects(()=>openKey(a,'owner-a','cd'.repeat(32)));
+await assert.rejects(()=>openKey({...a,ciphertext:a.ciphertext.slice(0,-4)+'AAAA'},'owner-a',secret));
+await assert.rejects(()=>sealKey(value,'owner-a','bad'));
+assert(!validApiKey(''));assert(!validApiKey('sk-short'));assert(!validApiKey('Bearer value'));assert(!validApiKey('sk-'+('x'.repeat(25))+'\r\n'));
+console.log('PASS AES-GCM encryption, nonce uniqueness, owner isolation, wrong key/tampering, invalid input');

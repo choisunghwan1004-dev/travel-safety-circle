@@ -5,3 +5,5 @@ export const deliveries=sqliteTable('deliveries',{id:text('id').primaryKey(),own
 export const aiUsage=sqliteTable("ai_usage",{owner:text("owner").primaryKey(),day:text("day").notNull(),count:integer("count").notNull(),lastAt:integer("last_at").notNull()});
 
 export const lookupCache=sqliteTable("lookup_cache",{id:text("id").primaryKey(),data:text("data").notNull(),expiresAt:integer("expires_at").notNull()});
+
+export const userAiKeys=sqliteTable("user_ai_keys",{owner:text("owner").primaryKey(),ciphertext:text("ciphertext").notNull(),iv:text("iv").notNull(),lastFour:text("last_four").notNull(),updatedAt:text("updated_at").notNull()});

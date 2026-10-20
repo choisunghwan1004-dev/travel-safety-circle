@@ -7,8 +7,9 @@ ALERT_EMAIL_FROM=
 # 실제 무인 반복 실행 검증 전에는 false 유지
 ALERT_SCHEDULER_READY=false
 
-# Server only; never commit actual keys
-OPENAI_API_KEY=
+# Server only: 64 hex characters, stable per installation. Never commit the value.
+# Each traveler registers their own OpenAI key in the AI settings screen.
+USER_KEY_ENCRYPTION_SECRET=
 
 # Optional public map provider switch; defaults work without API keys
 # GEOCODER_BASE_URL=https://nominatim.openstreetmap.org

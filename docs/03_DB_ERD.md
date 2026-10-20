@@ -58,3 +58,6 @@ erDiagram
 
 ## V1.5 보완 — 2026-10-21
 lookup_cache(id TEXT PK, data TEXT NOT NULL, expires_at INTEGER NOT NULL) 추가. 검색어는 해시로 식별하고 공개 지역·경찰시설 결과를 24시간 사용합니다. 물리 FK는 없습니다. 마이그레이션 0003_late_lockheed.sql과 0003_snapshot.json 참조. 자세한 전체 흐름은 `10_간편자동입력_검수.md`에 기록했습니다.
+
+## V1.6 본인 AI 키
+user_ai_keys 테이블 추가: owner TEXT PK, ciphertext TEXT NOT NULL, iv TEXT NOT NULL, last_four TEXT NOT NULL, updated_at TEXT NOT NULL. 물리 FK 없음. 0004_old_queen_noir.sql 적용. API 키 평문은 보관하지 않으며 보안 환경변수의 별도 마스터키로 AES-GCM 암호화한다. 자세한 처리·삭제 범위는 docs/11 참조.
