@@ -1,21 +1,22 @@
-# 여행안심 V1.3 · DB_ERD
+# 여행안심 V1.8.1 · DB_ERD
 
-작성 기준: 2026-10-20, 실제 V1.3 소스. 미구현·미검증은 별도 표시합니다.
+최신 전체 스키마를 먼저 기록하고 기존 단계별 추가 이력을 보존합니다.
 
-## 4. DB 설계와 ERD
+## 4. 현재 전체 스키마 (7개 테이블)
 
-실제 DB는 SQLite 호환 Cloudflare D1입니다. MySQL·PostgreSQL·FastAPI로 이관한 버전이 아닙니다.
+기준: 2026-10-21, db/schema.ts. D1/SQLite이며 모든 테이블에 물리 FK가 없습니다. 아래에서 ? 표시는 NULL 허용, 나머지 비-PK 컬럼은 NOT NULL입니다. owner의 계정 연결은 인증 로직으로 적용합니다.
 
-| 테이블 | 컬럼·타입 | 키·제약 | 용도 |
+| 테이블 | PK | 나머지 컬럼·타입 | 용도 |
 |---|---|---|---|
-| journeys | owner TEXT | PK, NOT NULL | 외부 인증에서 받은 사이트별 사용자 ID |
-| journeys | data TEXT | NOT NULL | 여행·연락처·위치·상태를 JSON으로 저장 |
-| journeys | revision INTEGER | NOT NULL, 기본 0 | 동시 저장 충돌 감지 |
-| deliveries | id TEXT | PK, NOT NULL | 계정·안전확인시각·채널·수신자 해시 중복 방지 |
-| deliveries | owner TEXT | NOT NULL, 물리 FK 없음 | 계정별 발송 기록 조회 |
-| deliveries | channel, recipient, status TEXT | NOT NULL | 문자/이메일, 수신자, 요청 상태 |
-| deliveries | created_at TEXT | NOT NULL | 기록 생성시각 |
-| deliveries | provider_id, error TEXT | NULL 가능 | 업체 요청 ID, 오류 안내 |
+| journeys | owner TEXT | data TEXT, revision INTEGER DEFAULT 0 | 여행·연락망·최신 위치 JSON·충돌 검사 |
+| deliveries | id TEXT | owner/channel/recipient/status/created_at TEXT, provider_id/error TEXT? | 중복 방지·업체 요청 기록 |
+| ai_usage | owner TEXT | day TEXT, count/last_at INTEGER | UTC 일별 AI 호출 제한 |
+| lookup_cache | id TEXT | data TEXT, expires_at INTEGER | 공개 검색 결과 해시 캐시 |
+| user_ai_keys | owner TEXT | ciphertext/iv/last_four/updated_at TEXT | 본인 AI 키 암호화 |
+| notification_settings | owner TEXT | ciphertext/iv/updated_at TEXT | 본인 발송 설정 암호화 |
+| alert_monitors | owner TEXT | last_at/result TEXT | 본인 최근 점검 기록 |
+
+전체 관계: journeys의 owner와 deliveries·ai_usage·user_ai_keys·notification_settings·alert_monitors의 owner는 논리적으로 연결되며 SQL FK가 아닙니다. lookup_cache는 공개 검색어 해시를 사용하는 별도 캐시입니다. 아래 ERD는 기본 여행/발송 관계를 나타내고, 이후 버전별 항목은 추가 이력입니다.
 
 ```mermaid
 erDiagram
