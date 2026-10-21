@@ -12,4 +12,4 @@ export function validateNotificationInput(b:any){
  return config;
 }
 export function enabledChannels(ready:{sms:boolean;email:boolean}){return (['sms','email'] as const).filter(c=>ready[c]);}
-export function eligibleContact(c:any){return c?.consent===true&&['가족','친구'].includes(c.relation);}
+export function eligibleContact(c:any){return c?.consent===true;}

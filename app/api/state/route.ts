@@ -1,4 +1,5 @@
 import {applyAlertDefault} from '../../../lib/alert-setup';
+import {synchronizeLastArea} from '../../../lib/last-area';
 import {validDate} from '../../../lib/assist-rules';
 import {sanitizeLocation} from '../../../lib/trip-autofill';
 import {locationSaveDue} from '../../../lib/location-rules';
@@ -12,7 +13,7 @@ import {eq,and} from 'drizzle-orm';
 export const dynamic='force-dynamic';
 const initial=()=>({trip:null,contacts:[],events:[],location:null,status:'준비 중',lastCheck:null,alertsEnabled:false,alertPreference:'on',lastAutoLocationAt:null});
 const reply=(data:unknown,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
-export async function GET(){const u=await getChatGPTUser();if(!u)return reply({error:'로그인이 필요합니다.'},401);const rows=await getDb().select().from(journeys).where(eq(journeys.owner,u.userId));return reply({state:rows[0]?JSON.parse(rows[0].data):initial(),revision:rows[0]?.revision??0});}
+export async function GET(){const u=await getChatGPTUser();if(!u)return reply({error:'로그인이 필요합니다.'},401);const rows=await getDb().select().from(journeys).where(eq(journeys.owner,u.userId));return reply({state:rows[0]?synchronizeLastArea(JSON.parse(rows[0].data)):initial(),revision:rows[0]?.revision??0});}
 export async function POST(req:Request){
  const u=await getChatGPTUser();if(!u)return reply({error:'로그인이 필요합니다.'},401);
  if(req.headers.get('origin')!==new URL(req.url).origin)return reply({error:'잘못된 요청입니다.'},403);
@@ -32,10 +33,9 @@ export async function POST(req:Request){
  if(!contactValid(v))return reply({error:'이름·전화번호·이메일은 모두 필수이며, 등록·자동 알림 수신 동의가 필요합니다.'},400);
  if(c.id&&!s.contacts.some((x:any)=>x.id===c.id))return reply({error:'수정할 연락처가 없습니다.'},404);
  if(s.contacts.some((x:any)=>x.id!==v.id&&(x.phone.replace(/\D/g,'')===v.phone.replace(/\D/g,'')||x.email?.toLowerCase()===v.email)))return reply({error:'이미 등록된 전화번호 또는 이메일입니다.'},409);
- if(!c.id&&s.contacts.length>=10)return reply({error:'연락처는 10명까지 등록할 수 있습니다.'},400);
  if(c.id)s.contacts=s.contacts.map((x:any)=>x.id===c.id?v:x);else s.contacts.push(v);log(c.id?'비상연락처 수정':'비상연락처 등록');
  }else if(b.action==='alerts'){
- if(b.value===true&&(!s.trip||!s.contacts.some((c:any)=>contactValid(c)&&['가족','친구'].includes(c.relation))))return reply({error:'여행과 이름·전화번호·이메일·수신동의를 갖춘 가족 또는 친구를 먼저 등록하세요.'},400);
+ if(b.value===true&&(!s.trip||!s.contacts.some((c:any)=>contactValid(c))))return reply({error:'여행과 이름·전화번호·이메일·수신동의를 갖춘 비상연락망을 먼저 등록하세요.'},400);
  s.alertsEnabled=b.value===true;s.alertPreference=s.alertsEnabled?'on':'off';log(s.alertsEnabled?'가족·친구 24시간 자동 알림 사용 요청 저장':'자동 알림 중지');
  }else if(b.action==='deleteContact'){s.contacts=s.contacts.filter((c:any)=>c.id!==b.id);log('비상연락처 삭제');
  }else if(b.action==='check'){
@@ -48,6 +48,7 @@ export async function POST(req:Request){
  const p=b.value;if(p?.mode==='automatic'&&!locationSaveDue(s))return reply({state:s,revision:row.revision,locationSkipped:true});if(!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lng)||Math.abs(p.lat)>90||Math.abs(p.lng)>180)return reply({error:'위치를 확인할 수 없습니다.'},400);
  const acquired=typeof p.acquiredAt==='string'?Date.parse(p.acquiredAt):Date.now();if(!Number.isFinite(acquired)||acquired>Date.now()+300000)return reply({error:'위치 확인시각이 올바르지 않습니다.'},400);if(s.location&&acquired<Date.parse(s.location.acquiredAt||s.location.at))return reply({state:s,revision:row.revision});s.location={lat:p.lat,lng:p.lng,accuracy:Number.isFinite(p.accuracy)?Math.max(0,p.accuracy):null,acquiredAt:new Date(acquired).toISOString(),at:now,mode:p.mode==='automatic'?'automatic':'manual'};if(p.mode==='automatic')s.lastAutoLocationAt=now;log(p.mode==='automatic'?'여행 중 2시간 간격 위치 자동 저장':'현재 위치 수동 저장');
  }else if(b.action==='clear'){Object.assign(s,initial());}else return reply({error:'지원하지 않는 작업입니다.'},400);
+ synchronizeLastArea(s);
  if(['trip','contact'].includes(b.action))applyAlertDefault(s);
  if(b.action!=='clear')s.dataUpdatedAt=now;
  s.events=s.events.slice(0,100);const result=await db.update(journeys).set({data:JSON.stringify(s),revision:row.revision+1}).where(and(eq(journeys.owner,u.userId),eq(journeys.revision,row.revision))).returning();

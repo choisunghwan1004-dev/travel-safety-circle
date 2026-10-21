@@ -27,5 +27,7 @@ console.log('PASS: 자동 자료 최신 위치/업로드 시각/오래된 위치
 
 const c={...contact,id:'c1',relation:'가족'};const original={...trip,contacts:[c]};const tick=start+WAIT_MS;
 assert.equal(sameAlertConsent(original,original,c,tick),true);
-for(const changed of [{...original,alertsEnabled:false},{...original,status:'귀가 완료'},{...original,lastCheck:new Date(tick).toISOString()},{...original,contacts:[]},{...original,contacts:[{...c,consent:false}]},{...original,contacts:[{...c,relation:'기타'}]},{...original,contacts:[{...c,email:'other@example.test'}]}])assert.equal(sameAlertConsent(original,changed,c,tick),false);
+for(const changed of [{...original,alertsEnabled:false},{...original,status:'귀가 완료'},{...original,lastCheck:new Date(tick).toISOString()},{...original,contacts:[]},{...original,contacts:[{...c,consent:false}]},{...original,contacts:[{...c,email:'other@example.test'}]}])assert.equal(sameAlertConsent(original,changed,c,tick),false);
 console.log('PASS cancellation before send: check-in, finish, disabled, contact removal/consent/relation/recipient changes');
+
+assert.equal(sameAlertConsent(original,{...original,contacts:[{...c,relation:'기타'}]},c,tick),true);

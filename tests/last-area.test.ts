@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {gpsArea,synchronizeLastArea} from '../lib/last-area.ts';
+import {reportSnapshot,alertText} from '../lib/alert-rules.ts';
+const p={lat:37.5,lng:127.1,acquiredAt:'2026-10-21T00:00:00Z'};
+const fresh=synchronizeLastArea({trip:{},location:p});assert.equal(fresh.trip.lastArea,'휴대전화 GPS 37.50000, 127.10000');assert.equal(fresh.trip.lastAreaLocationAt,p.acquiredAt);
+assert.equal(synchronizeLastArea({trip:{lastArea:'확인한 동네',lastAreaLocationAt:p.acquiredAt},location:p}).trip.lastArea,'확인한 동네');
+assert.equal(synchronizeLastArea({trip:{lastArea:'오래된 동네',lastAreaLocationAt:'2026-10-20T00:00:00Z'},location:p}).trip.lastArea,fresh.trip.lastArea);
+assert.equal(gpsArea({lat:0,lng:0}),'휴대전화 GPS 0.00000, 0.00000');assert.equal(gpsArea({lat:91,lng:0}),'');
+assert.deepEqual(synchronizeLastArea({trip:{},location:null}),{trip:{},location:null});
+const contacts=Array.from({length:15},(_,i)=>({name:'지인'+i,phone:'010'+String(i).padStart(8,'0'),email:'contact'+i+'@example.test',relation:'기타',consent:true}));contacts.push({...contacts[0],consent:false});
+const s={trip:{name:'여행자'},location:p,contacts};const report=reportSnapshot(s);assert.equal(report.contacts.length,15);assert.equal(report.contacts[14].phone,contacts[14].phone);assert.ok(alertText(s).includes('contact14@example.test'));assert.equal(report.trip.lastArea,fresh.trip.lastArea);
+console.log('PASS automatic GPS fallback, timestamp consistency, current region preserved, stale region replaced, missing/invalid GPS, all consented contacts automatically in report');
