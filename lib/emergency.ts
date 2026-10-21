@@ -1,0 +1,2 @@
+export function policeEmergency(country:unknown){const c=String(country||'').trim().toLowerCase();if(['대한민국','한국','kr','south korea'].includes(c))return {country:'대한민국',number:'112'};if(['일본','jp','japan','日本'].includes(c))return {country:'일본',number:'110'};return null;}
+export function telephoneHref(value:unknown){const n=String(value||'').trim().replace(/[ ().-]/g,'');return /^\+?\d{3,15}$/.test(n)?'tel:'+n:null;}
